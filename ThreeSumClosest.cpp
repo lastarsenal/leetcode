@@ -1,3 +1,31 @@
+/**
+ *
+ * =====================================================================================                                                                                                                                                    
+ *
+ *       Filename:  ThreeSumClosest.cpp
+ *
+ *    Description:  
+ *
+ *        Version:  1.0
+ *        Created:  2015-03-06
+ *       Revision:  none
+ *       Compiler:  gcc
+ *
+ *         Author:  yixun 
+ *
+ * =====================================================================================
+Problem:
+Given an array S of n integers, find three integers in S such that the sum is closest to a given number, target. Return the sum of the three integers. You may assume that each input would have exactly one solution.
+
+    For example, given array S = {-1 2 1 -4}, and target = 1.
+
+    The sum that is closest to the target is 2. (-1 + 2 + 1 = 2).
+Hide Tags Array Two Pointers
+
+解题思路：
+跟3Sum类似，3Sum是要找到target，这里不找target，而是可能的最接近target的sum，难度并没有增加，只需稍作条件判断上的改动即可
+ */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <limits.h>
