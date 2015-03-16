@@ -26,7 +26,9 @@ Given {1,2,3,4}, reorder it to {1,4,2,3}.
 
 Hide Tags Linked List
 
-缓存了所有指针，不妥，慢
+快慢两个指针，一个走一步，一个走两步，可以找到链表的中心点。
+然后从中心点开始，revert后半段链表
+最后把前半段和后半段做merge。
 
  */
 #include <vector>
@@ -44,27 +46,37 @@ class Solution {
 public:
     void reorderList(ListNode *head) {
         if (head == NULL) return;
-        ListNode* p = head;
-        ListNode* q = head;
-        vector<ListNode*> prevs;
+        ListNode *slow = head;
+        ListNode *fast = head;
+        //find middle
         int i = 0;
-        int j = 0;
-        while (q!=NULL) {
-            prevs.push_back(q);
-            q = q->next;
-            j++;
-        }
-        j = j - 1;
-        while (i < j) {
-            q = prevs[j];
-            ListNode* next = p->next;
-            p->next = q;
-            q->next = next;
-            p = next; 
+        while (fast != NULL && fast->next != NULL) {
+            slow = slow->next;
+            fast = fast->next->next;
             i++;
-            j--;
         }
-        p->next = NULL;
+        if (i == 0) return;
+        ListNode *temp = slow->next;
+        slow->next = NULL;
+        slow = temp;
+        //revert half of tail
+        ListNode *p2 = NULL;
+        while (slow != NULL) {
+            temp = slow->next;
+            slow->next = p2;
+            p2 = slow;
+            slow = temp;
+        }
+        //merge
+        ListNode *p1 = head;
+        while (p1 != NULL && p2 != NULL) {
+            ListNode *t1 = p1->next;
+            ListNode *t2 = p2->next;
+            p1->next = p2;
+            p2->next = t1;
+            p1 = t1;
+            p2 = t2;
+        }
     }
 };
 
