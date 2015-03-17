@@ -1,4 +1,17 @@
 /**
+ * =====================================================================================
+ *       Filename:  PathSum.cpp
+ *
+ *    Description:  
+ *
+ *        Version:  1.0
+ *        Created:  2015-03-16
+ *       Revision:  none
+ *       Compiler:  gcc
+ *
+ *         Author:  yixun 
+ *
+ * =====================================================================================
 
 Problem: Path Sum 
 Given a binary tree and a sum, determine if the tree has a root-to-leaf path such that adding up all the values along the path equals the given sum.
