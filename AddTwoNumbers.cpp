@@ -26,6 +26,8 @@ Hide Tags Linked List Math
 两个链表同步遍历，相加，注意进位，以及最后结尾的进位即可。
 这题可以理解为两个大整数相加的运算。
  */
+#include <stdlib.h>
+
 struct ListNode {
   int val;
   ListNode *next;
