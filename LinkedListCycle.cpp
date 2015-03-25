@@ -1,7 +1,7 @@
 /**
  * =====================================================================================                                                                                                                                                    
  *
- *       Filename:  WordSearch.cpp
+ *       Filename:  LinkedListCycle.cpp
  *
  *    Description:  
  *
