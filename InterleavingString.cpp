@@ -27,6 +27,7 @@ When s3 = "aadbbbaccc", return false.
 
 Hide Tags Dynamic Programming String
 解题思路：动态规划
+递归的解法会超时
  */
 #include <string>
 
@@ -53,4 +54,33 @@ public:
         }
         return flag[s1.length()][s2.length()];    
     }
+
+
+    bool isInterleaveV2(string s1, string s2, string s3) {
+        if (s1.length() + s2.length() != s3.length()) {
+            return false;
+        }
+        if (s1.length() == 0 && s2.length() == 0 && s3.length() == 0) {
+            return true;
+        }
+        if (s1.length() == 0) {
+            return (s3[0] == s2[0]) && isInterleave(s1, s2.substr(1), s3.substr(1));
+        }
+        if (s2.length() == 0) {
+            return (s3[0] == s1[0]) && isInterleave(s1.substr(1), s2, s3.substr(1));
+        }
+        return ((s3[0] == s2[0]) && isInterleave(s1, s2.substr(1), s3.substr(1))) ||
+                 ((s3[0] == s1[0]) && isInterleave(s1.substr(1), s2, s3.substr(1)));
+    
+    }
 };
+
+int main() {
+    string s1 = "aabcc";
+    string s2 = "dbbca";
+    string s3 = "aadbbcbcac";
+    Solution s;
+    printf("is_interleave=%d\n", s.isInterleaveV2(s1, s2, s3));
+    s3 = "aadbbbaccc";
+    printf("is_interleave=%d\n", s.isInterleaveV2(s1, s2, s3));
+}
