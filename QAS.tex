@@ -1,0 +1,62 @@
+\documentclass{beamer}
+\usepackage[UTF8,noindent]{ctexcap}
+\usepackage{graphicx}
+\title{Query Answer Selection}
+\author{yixun}
+\date{\today}
+\subject{Query Answer Selection}
+\keywords{Machine Learning, Deap Learning, CNN, RNN, LSTM}
+\begin{document}
+\begin{frame}
+\titlepage
+\end{frame}
+\begin{frame}{任务描述}{Query Answer Selection是一个分类任务}
+\begin{itemize}
+\item 对于Query $q_i \in Q$，候选答案集合为$\{a_{i1}, a_{i2}, \dots, a_{im}\}$，对于每一个答案有一个标记值$y_{ij}$，$y_{ij} = 1$表示是问题$q_i$的答案，$y_{ij} = 0$表示不是$q_i$的答案。
+\item 对于标注的所有三元组$(q_i, a_{ij}, y_(ij))$，任务就是要学习一个分类器，来预测正确的答案。
+\end{itemize}
+\end{frame}
+\begin{frame}{任务描述}{一些例子}
+
+\end{frame}
+\begin{frame}{MengQiu Wang, 2007(CMU)}{What is the Jeopardy Model? A Quasi-Synchronous Grammar for QA}
+\begin{itemize}
+\item 基于语法结构相似度的模型
+\item 使用WordNet的语义特征，同义词，反义词，上下谓词，形式曲折变化
+\item 提供了TREC8-12/TREC8-13数据集用于训练测试
+\item 评测：MAP/MRR
+  \begin{itemize}
+  \item 100人工判断：dev set: 0.6812/0.7636, test set: 0.6029/0.6852
+  \item 2293 noisy: dev set: 0.6683/0.7443, test set: 0.5655/0.6687
+  \end{itemize}
+\end{itemize}
+\end{frame}
+\begin{frame}{Lei Yu, 2014(Google)}{Deep Learning for Answer Sentence Selection}
+\begin{itemize}
+\item 使用Bordes, 2014的公式衡量$a$是$q$正确回答的概率：
+  $p(y=1|q,a)=\sigma(q^TMa+b)$
+\item 学习目标：最小化交叉熵
+\item 表示句子vector:
+  \begin{itemize}
+  \item Bag-of-words: word embedding加和的均值
+  \item Bigram CNN
+  \end{itemize}
+\item 使用word count共现，idf * word count共现，上面训练的QA匹配概率训练LR模型
+\item test set: 0.7113/0.7846
+\end{itemize}
+\end{frame}
+\begin{frame}{Aliaksei Severyn, 2015(Google)}{Learning to Rank Short Text Pairs with Convolutional Deep Neural Networks}
+\begin{itemize}
+\item 模型:
+\includegraphics[scale=0.3]{CNN.jpg}
+\item test set：0.7459/0.8078
+\item github: https://github.com/aseveryn/deep-qa，paper作者自己的实现
+\end{itemize}
+\end{frame}
+\begin{frame}{Di Wang 2015(CMU)}{A Long Short-Term Memory Model for Answer Sentence Selection in Question Answering}
+\end{frame}
+\begin{frame}{Ming Tan 2016(IBM)}{LSTM-BASED DEEP LEARNING MODELS FOR NONFACTOID ANSWER SELECTION}
+\end{frame}
+\begin{frame}{总结}
+\end{frame}
+\end{document}
