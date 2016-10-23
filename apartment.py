@@ -25,10 +25,18 @@ http://www.bjjs.gov.cn/publish/portal0/tab662/info92647.htm
 同时考虑到实际执行中计算契税时要将房屋网签价格除以1.05不超过京建发[2014] 382号就按普通住宅缴纳契税，
 因此这个字典中存的值是将京建发[2014] 382号乘以1.05，当做普通住宅线。这样在计算契税时不用再除以1.05判断
 """
-
+"""
 PRICE_IN_5_LIMIT = 491
 PRICE_5_6_LIMIT = 393
 PRICE_OUT_6_LIMIT = 294
+"""
+PRICE_IN_5_LIMIT = 468
+PRICE_5_6_LIMIT = 374
+PRICE_OUT_6_LIMIT = 280
+
+CURRENT_CASH = 200
+DEBT = 83
+APARTMENT_SQ = 74.0
 
 ORDINARY_APARTMENT_DICT = {
     LOC_IN_5_RING:PRICE_IN_5_LIMIT,
@@ -111,7 +119,8 @@ class apartment:
         if not self.is_man5_uniq:
             base = (self.wangqian_price - self.wangqian_price * 0.1 - self.original_total_price 
                    - self.original_total_price * 0.01 - self.zengzhishui - self.lixi)
-            geshui = base * 0.2
+            if base > 0:
+                geshui = base * 0.2
         return (geshui, base)
 
     def calc_ZhongJieFei(self):
@@ -147,6 +156,7 @@ class apartment:
         print "\t房屋面积: %.3f平"%self.area
         print "\t报价每平米价格: %.3f万"%self.price_per_square
         print "\t网签每平米价格: %.3f万"%self.wq_price_per_square
+        print "\t房屋原值: %.3f万"%self.original_total_price
         print "\t房屋位置: %d"%(self.location)
         print "\t是否满二: %s"%(man2_display)
         print "\t是否满五唯一: %s"%(man5_display)
@@ -167,14 +177,24 @@ class apartment:
         print "\t每平成本: %.3f万"%cost_per_square
         print "\t当前每平价格: %.3f万"%self.price_per_square
         print "\t保本涨幅比例: %.3f%%"%(promote * 100)
-        
+        print "\t贷款: %.3f万"%daikuan
+        gap = real_pay - CURRENT_CASH
+        sell_total_price = gap + DEBT
+        sell_price_per_sq = sell_total_price / APARTMENT_SQ 
+        print "自己房屋卖出底线:"
+        print "\t最低卖出总价:%.3f万"%sell_total_price
+        print "\t最低卖出每平均价:%.3f万"%sell_price_per_sq
+        print "\t解抵押贷款额度:%.3f万"%DEBT
+        print "\t解抵押后净得:%.3f"%(sell_total_price - DEBT)
+        print "\t总可支配资金:%.3f"%(sell_total_price - DEBT + CURRENT_CASH)
 
 if __name__ == "__main__":
-    desc = "中铁国际城80平精装修方案一"
-    tp = 700
-    wp = PRICE_5_6_LIMIT
-    op = 108
-    area = 80.6
+    
+    desc = "中铁国际城78平原值高"
+    tp = 660
+    wp = 364 
+    op = 325
+    area = 78
     location = LOC_5_6_RING
     is_man5_uniq = False
     is_man2 = True
@@ -182,15 +202,12 @@ if __name__ == "__main__":
     lixi = 0.0
     ap = apartment(desc, tp, wp, op, area, location, is_man5_uniq, is_man2, is_first, lixi)
     ap.calc_RealPay()
-    desc = "中铁国际城80平精装修方案二"
-    wp = 500
-    ap = apartment(desc, tp, wp, op, area, location, is_man5_uniq, is_man2, is_first, lixi)
-    ap.calc_RealPay()
-    desc = "润泽悦溪89平满五唯一"
-    tp = 720
-    wp = PRICE_5_6_LIMIT
-    op = 87
-    area = 89.0
+
+    desc = "润泽悦溪89平南北通透满五唯一"
+    tp = 725
+    wp = PRICE_5_6_LIMIT 
+    op = 80
+    area = 89
     location = LOC_5_6_RING
     is_man5_uniq = True
     is_man2 = True
@@ -198,3 +215,22 @@ if __name__ == "__main__":
     lixi = 0.0
     ap = apartment(desc, tp, wp, op, area, location, is_man5_uniq, is_man2, is_first, lixi)
     ap.calc_RealPay()
+    
+    """
+    desc = "中铁国际城80平精装修方案二"
+    wp = 500
+    ap = apartment(desc, tp, wp, op, area, location, is_man5_uniq, is_man2, is_first, lixi)
+    ap.calc_RealPay()
+    desc = "润泽悦溪89平满五唯一"
+    tp = 650
+    wp = PRICE_5_6_LIMIT
+    op = 87
+    area = 87.0
+    location = LOC_5_6_RING
+    is_man5_uniq = True
+    is_man2 = True
+    is_first = True
+    lixi = 0.0
+    ap = apartment(desc, tp, wp, op, area, location, is_man5_uniq, is_man2, is_first, lixi)
+    ap.calc_RealPay()
+    """
