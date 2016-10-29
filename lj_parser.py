@@ -4,60 +4,119 @@
 # @Author:yixun
 # @Date:2012-11-01
 
-import lxml.html
+from bs4 import BeautifulSoup
+import getopt, sys
 
-header = "//div[@class=\"content\"]/div[@class=\"leftContent\"]/ul[@class=\"listContent\"]/li/div[@class=\"info\"]"
-title_xpath = header + "/div[@class=\"title\"]/a/node()"
-addr_xpath = header + "/div[@class=\"address\"]/div[@class=\"houseInfo\"]/span/following-sibling::node()"
-deal_date_xpath = header + "/div[@class=\"address\"]/div[@class=\"dealDate\"]/node()"
-total_price_xpath = header + "/div[@class=\"address\"]/div[@class=\"totalPrice\"]/span/node()"
-position_xpath = header + "/div[@class=\"flood\"]/div[@class=\"positionInfo\"]/span/following-sibling::node()"
-source_xpath = header + "/div[@class=\"flood\"]/div[@class=\"source\"]/node()"
-junjia_xpath = header + "/div[@class=\"flood\"]/div[@class=\"unitPrice\"]/span/node()"
-attr_xpath = header + "/div[@class=\"dealHouseInfo\"]//text()"
-
-def parse(htmlfile):
+def parse(htmlfile, out):
     f = open(htmlfile, "r")
-    doc = lxml.html.fromstring(f.read())
-    f.close()
-    pretty_html=lxml.html.tostring(doc,  pretty_print=True, encoding="utf8", method="xml")
-    #print pretty_html
-    apartment_titles = doc.xpath(title_xpath)
-    addrs = doc.xpath(addr_xpath)
-    deal_dates = doc.xpath(deal_date_xpath)
-    total_prices = doc.xpath(total_price_xpath)
-    positions = doc.xpath(position_xpath)
-    qianyue_list = doc.xpath(source_xpath)
-    junjia_list = doc.xpath(junjia_xpath)
-    attr_list = doc.xpath(attr_xpath)
-    print "title lens=%d, addrs lens=%d, deal_date len=%d, total_price len=%d, \
-         position len=%d, qianyue len=%d, junjia_len=%d, attr_len=%d"%(len(apartment_titles), len(addrs),
-         len(deal_dates), len(total_prices), len(positions), len(qianyue_list), len(junjia_list), len(attr_list))
-    for i, title in enumerate(apartment_titles):
-        title = title.encode("utf-8")
+    soup = BeautifulSoup(f)
+    #print(soup.prettify())
+    apartments = soup.find("div", "content").find("ul", "listContent").find_all("li")
+    print "apartment.len=%d"%len(apartments)
+    for k, apartment in enumerate(apartments):
+        #print k
+        node = apartment.find("div", "title")
+        #print node
+        title = ""
+        url = "EmptyLink"
+        if node.a != None:
+            title = node.a.string
+            url = node.a["href"]
+        else:
+            title = node.span.previous_sibling
         items = title.split(" ")
         name = items[0]
         house_type = items[1]
         area = items[2]
-        items = addrs[i].encode("utf-8").split("|")
+        idx = area.find("平".decode("utf-8"))
+        if idx >= 0:
+            area = area[0:idx]
+        houseInfo = apartment.find("div", "address").find("div", "houseInfo").span.next_sibling
+        items = houseInfo.split("|")
         chaoxiang = items[0].strip()
         zhuangxiu = items[1].strip()
         dianti = items[2].strip()
-        items = deal_dates[i].encode("utf-8").split(".")
+        dealDate = apartment.find("div", "address").find("div", "dealDate").string
+        items = dealDate.split(".")
         year_month = items[0] + "-" + items[1]
-        date = items[2]
-        total_price = total_prices[i].encode("utf-8")
-        items = positions[i].encode("utf-8").split(" ")
-        louceng = items[0]
+        date = "XX"
+        if len(items) > 2:
+            date = items[2]
+        node = apartment.find("div", "address").find("div", "totalPrice")
+        total_price = ""
+        if node.span != None:
+            total_price = node.span.string
+        else:
+            total_price = node.string
+        positionInfo = apartment.find("div", "flood").find("div", "positionInfo").span.next_sibling
+        items = positionInfo.split(" ")
+        idx = items[0].find("(")
+        louceng = ""
+        height = "未知"
+        if idx >= 0:
+            louceng = items[0][0:idx]
+            height = items[0][idx+1:len(items[0])-1]
+        else:
+            louceng = items[0]
         nianfen = items[1]
-        qianyue = qianyue_list[i].encode("utf-8")
-        junjia = junjia_list[i].encode("utf-8")
-        attr = "ABSENT"
-        if i < len(attr_list):
-            attr = attr_list[i].encode("utf-8")
-        print("%s %s %s %s %s %s %s %s %s %s %s %s %s元/平 %s")%(name, house_type, 
-            area, chaoxiang, zhuangxiu, dianti, year_month, date, 
-            total_price, louceng, nianfen, qianyue, junjia, attr)
+        qianyue = apartment.find("div", "flood").find("div", "source").string
+        node = apartment.find("div", "flood").find("div", "unitPrice")
+        unit_price = ""
+        if node.span != None:
+            unit_price = node.span.string
+        else:
+            unit_price = node.string
+        node = apartment.find("div", "dealHouseInfo").find("span", "dealHouseTxt")
+        status = "EmptyInfo"
+        if node != None:
+            status = node.span.string
+        tp = (url, name, house_type, area, chaoxiang,zhuangxiu, dianti, year_month, date, total_price, louceng, height, nianfen, qianyue, unit_price, status)
+        utf8_tp = tuple([item.encode("utf-8") for item in tp])
+        out.write("%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n"%utf8_tp)
+        #out.write("%s %s %s %s %s %s %s %s %s %s %s %s %s %s %s\n"%(url, name, house_type, area, chaoxiang, 
+        #     zhuangxiu, dianti, year_month, date, total_price, louceng, nianfen, qianyue, unit_price, status))
 
 if __name__ == "__main__":
-    parse("data/index.html") 
+    try:
+        opts, args = getopt.getopt(sys.argv[1:], "ho:", ["output="])
+    except getopt.GetoptError, err:
+        print str(err)
+        usage()
+        sys.exit(2)
+    output_file = ""
+    for o, a in opts:
+        if o in ("-h", "--help"):
+            usage()
+            sys.exit(1)
+        elif o in ("-o", "--output"):
+            output_file = a 
+        else:
+            print "unhandled option"
+            usage()
+            sys.exit(3)    
+    """
+    file_list = [
+        "data/index.html",
+        "data/index.html.1",
+        "data/index.html.2",
+        "data/index.html.3",
+        "data/index.html.4",
+        "data/index.html.5",
+        "data/index.html.6",
+        "data/index.html.7",
+        "data/index.html.8",
+    ]
+    """
+    file_list = [
+        "data/guanjing/index.html",
+        "data/guanjing/index.html.1",
+        "data/guanjing/index.html.2",
+        "data/guanjing/index.html.3",
+        "data/guanjing/index.html.4",
+    ]
+    out = open(output_file, "w")
+    out.write("链接\t小区\t户型\t面积(平米)\t朝向\t装修\t是否电梯\t成交年月\t成交日期\t总价(万)\t楼层\t总楼层数\t建筑年份\t签约来源\t单价(元/平)\t状态\n")
+    for f in file_list:
+        print "***** parse file: %s"%f
+        parse(f, out)
+    out.close()
