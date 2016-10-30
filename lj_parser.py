@@ -5,7 +5,7 @@
 # @Date:2012-11-01
 
 from bs4 import BeautifulSoup
-import getopt, sys
+import getopt, sys, os
 
 def parse(htmlfile, out):
     f = open(htmlfile, "r")
@@ -78,45 +78,50 @@ def parse(htmlfile, out):
 
 if __name__ == "__main__":
     try:
-        opts, args = getopt.getopt(sys.argv[1:], "ho:", ["output="])
+        opts, args = getopt.getopt(sys.argv[1:], "hi:o:", ["input=", "output="])
     except getopt.GetoptError, err:
         print str(err)
         usage()
         sys.exit(2)
+    input_dir = ""
     output_file = ""
     for o, a in opts:
         if o in ("-h", "--help"):
             usage()
             sys.exit(1)
+        elif o in ("-i", "--input"):
+            input_dir = a 
         elif o in ("-o", "--output"):
             output_file = a 
         else:
             print "unhandled option"
             usage()
             sys.exit(3)    
-    """
     file_list = [
-        "data/index.html",
-        "data/index.html.1",
-        "data/index.html.2",
-        "data/index.html.3",
-        "data/index.html.4",
-        "data/index.html.5",
-        "data/index.html.6",
-        "data/index.html.7",
-        "data/index.html.8",
+        "data/aojinghuating/index.html",
+        "data/aojinghuating/index.html.1",
+        "data/aojinghuating/index.html.2",
     ]
-    """
-    file_list = [
-        "data/guanjing/index.html",
-        "data/guanjing/index.html.1",
-        "data/guanjing/index.html.2",
-        "data/guanjing/index.html.3",
-        "data/guanjing/index.html.4",
-    ]
+    filelist = os.listdir(input_dir)
+    #print filelist
+    temp = []
+    for f in filelist:
+        idx = f.rfind('.')
+        if idx < 0:
+            continue
+        suffix = f[idx+1:]
+        seqno = 0
+        try:
+            seqno = int(suffix)
+        except ValueError:
+            pass
+        #print seqno
+        temp.append((seqno, f))
+    temp.sort(key=lambda item : item[0])
     out = open(output_file, "w")
     out.write("链接\t小区\t户型\t面积(平米)\t朝向\t装修\t是否电梯\t成交年月\t成交日期\t总价(万)\t楼层\t总楼层数\t建筑年份\t签约来源\t单价(元/平)\t状态\n")
-    for f in file_list:
+    for t in temp:
+        f = os.path.join(input_dir, t[1])
         print "***** parse file: %s"%f
         parse(f, out)
     out.close()
