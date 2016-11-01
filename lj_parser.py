@@ -7,7 +7,7 @@
 from bs4 import BeautifulSoup
 import getopt, sys, os
 
-def parse(htmlfile, out):
+def parse(htmlfile, out, deal_num_per_month):
     f = open(htmlfile, "r")
     soup = BeautifulSoup(f)
     #print(soup.prettify())
@@ -39,13 +39,14 @@ def parse(htmlfile, out):
         dealDate = apartment.find("div", "address").find("div", "dealDate").string
         items = dealDate.split(".")
         year_month = items[0] + "-" + items[1]
-        date = "XX"
-        if len(items) > 2:
-            date = items[2]
         node = apartment.find("div", "address").find("div", "totalPrice")
         total_price = ""
         if node.span != None:
             total_price = node.span.string
+            if year_month not in deal_num_per_month:
+                deal_num_per_month[year_month] = 1
+            else:
+                deal_num_per_month[year_month] += 1
         else:
             total_price = node.string
         positionInfo = apartment.find("div", "flood").find("div", "positionInfo").span.next_sibling
@@ -70,7 +71,7 @@ def parse(htmlfile, out):
         status = "EmptyInfo"
         if node != None:
             status = node.span.string
-        tp = (url, name, house_type, area, chaoxiang,zhuangxiu, dianti, year_month, date, total_price, louceng, height, nianfen, qianyue, unit_price, status)
+        tp = (url, name, house_type, area, chaoxiang,zhuangxiu, dianti, year_month, dealDate, total_price, louceng, height, nianfen, qianyue, unit_price, status)
         utf8_tp = tuple([item.encode("utf-8") for item in tp])
         out.write("%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n"%utf8_tp)
         #out.write("%s %s %s %s %s %s %s %s %s %s %s %s %s %s %s\n"%(url, name, house_type, area, chaoxiang, 
@@ -118,10 +119,19 @@ if __name__ == "__main__":
         #print seqno
         temp.append((seqno, f))
     temp.sort(key=lambda item : item[0])
-    out = open(output_file, "w")
+    out = open(output_file + ".txt", "w")
     out.write("链接\t小区\t户型\t面积(平米)\t朝向\t装修\t是否电梯\t成交年月\t成交日期\t总价(万)\t楼层\t总楼层数\t建筑年份\t签约来源\t单价(元/平)\t状态\n")
+    deal_num_per_month = {}
     for t in temp:
         f = os.path.join(input_dir, t[1])
         print "***** parse file: %s"%f
-        parse(f, out)
+        parse(f, out, deal_num_per_month)
     out.close()
+    print len(deal_num_per_month)
+    out2 = open(output_file + "_ym.txt", "w")
+    dl = [(year_month, num) for (year_month, num) in deal_num_per_month.items()]
+    dl.sort(key=lambda item : item[0], reverse=True)
+    for (year_month, num) in dl:
+        out2.write("%s\t%d\n"%(year_month, num))
+    out2.close()
+
